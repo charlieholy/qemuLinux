@@ -1,0 +1,14 @@
+qemu-system-arm \
+  -M vexpress-a9 \
+  -kernel linux-5.15.50/arch/arm/boot/zImage \
+  -dtb linux-5.15.50/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+  -sd busybox/rootfs.ext4 \
+  -append "root=/dev/mmcblk0 rw console=ttyAMA0,115200 init=/linuxrc ignore_loglevel" \
+  -m 512M \
+  -nographic \
+  -S -s
+
+gdb-multiarch -ex 'target remote:1234 ' vmlinux
+
+b start_kernel
+b pl011_set_termios
