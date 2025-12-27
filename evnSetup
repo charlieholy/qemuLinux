@@ -1,0 +1,62 @@
+sudo apt update && sudo apt install -y qemu-system-arm qemu-utils gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu device-tree-compiler busybox-static build-essential libncurses5-dev flex bison wget unzip openssh-server
+
+
+busybox
+
+
+cd ~
+wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
+tar -xvf busybox-1.36.1.tar.bz2
+cd busybox-1.36.1
+
+# 配置 BusyBox
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- defconfig
+# 启用静态编译（关键：无需动态库）
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+# 勾选：Settings -> Build static binary (no shared libs)
+
+# 编译并安装 BusyBox
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- install -j$(nproc)
+# 创建根文件系统目录
+mkdir -p ~/rootfs
+cd ~/rootfs
+# 复制 BusyBox 生成的文件
+cp -r ~/busybox-1.36.1/_install/* ./
+
+# 创建必要目录
+mkdir -p dev proc sys tmp etc/init.d mnt root
+
+# 创建 init 启动脚本（核心）
+cat > etc/init.d/rcS << EOF
+#!/bin/sh
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /tmp
+mdev -s  # 自动创建设备节点
+echo "Welcome to QEMU ARM Linux!"
+EOF
+
+# 赋予执行权限
+chmod +x etc/init.d/rcS
+
+# 创建 inittab（指定启动脚本）
+cat > etc/inittab << EOF
+::sysinit:/etc/init.d/rcS
+::respawn:/bin/sh
+::ctrlaltdel:/sbin/reboot
+EOF
+
+# 创建设备节点（控制台/串口）
+sudo mknod dev/console c 5 1
+sudo mknod dev/ttyAMA0 c 204 64  # QEMU 串口节点
+
+
+root@iZbp18b84buehuy2ylm0joZ:/var/fpwork/pechen/linux# cat run.sh 
+QEMU_AUDIO_DRV=none qemu-system-arm \
+  -M vexpress-a9 \
+  -kernel linux-5.15.50/arch/arm/boot/zImage \
+  -dtb linux-5.15.50/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+  -sd busybox/rootfs.ext4 \
+  -append "root=/dev/mmcblk0 rw console=ttyAMA0,115200 init=/linuxrc ignore_loglevel" \
+  -m 512M \
+  -nographic
