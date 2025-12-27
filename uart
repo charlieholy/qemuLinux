@@ -12,3 +12,15 @@ gdb-multiarch -ex 'target remote:1234 ' vmlinux
 
 b start_kernel
 b pl011_set_termios
+
+
+////// debug against remap
+b pl011_set_termios
+
+(gdb) print uap->port->membase
+$9 = (unsigned char *) 0xa4903000 ""
+
+so the map is 0x10009000 -> 0xa4903000
+
+watch *0xa4903024 // it works
+  pl011_write(quot >> 6, uap, REG_IBRD);    // ibrd_reg 0x10009024
