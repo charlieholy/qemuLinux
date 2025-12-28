@@ -1,6 +1,12 @@
 sudo apt update && sudo apt install -y qemu-system-arm qemu-utils gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu device-tree-compiler busybox-static build-essential libncurses5-dev flex bison wget unzip openssh-server
 
 
+export ARCH=arm 
+export CROSS_COMPILE=arm-
+make vexpress_defconfig  
+make zImage  
+make vexpress-v2p-ca9.dtb
+
 busybox
 
 
