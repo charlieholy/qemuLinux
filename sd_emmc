@@ -8,3 +8,10 @@ QEMU_AUDIO_DRV=none qemu-system-arm \
   -m 512M \
   -nographic \
   -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2222-:2
+
+# 配置 IP（用户模式默认网段 10.0.2.0/24）
+ifconfig eth0 10.0.2.15 netmask 255.255.255.0 up
+# 默认网关固定为 10.0.2.2（QEMU 内置 NAT 网关）
+route add default gw 10.0.2.2 eth0
+# 配置 DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
