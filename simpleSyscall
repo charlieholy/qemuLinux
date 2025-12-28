@@ -10,3 +10,21 @@ int main() {
 arm-linux-gnueabihf-gcc b.c -march=armv7-a -mtune=cortex-a9 -o sinpleS -mfpu=neon -static
 
 cp sinpleS /var/fpwork/nfs_share/
+
+
+///////
+#include <unistd.h>
+#include <sys/syscall.h>  // 包含系统调用号定义
+
+int main() {
+    const char *str = "Call syscall() (inner svc #0)!\n";
+    int len = strlen(str);
+
+    // syscall(系统调用号, 参数1, 参数2, ...)
+    // __NR_write=4（sys_write系统调用号），参数：1（stdout）、str、len
+    syscall(__NR_write, 1, str, len);
+
+    // 退出进程：__NR_exit=1
+    syscall(__NR_exit, 0);
+    return 0;
+}
