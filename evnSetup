@@ -56,6 +56,8 @@ EOF
 sudo mknod dev/console c 5 1
 sudo mknod dev/ttyAMA0 c 204 64  # QEMU 串口节点
 
+dd if=/dev/zero of=a64rootfs.ext4 bs=1M count=128
+mkfs.ext4 a64rootfs.ext4
 
 root@iZbp18b84buehuy2ylm0joZ:/var/fpwork/pechen/linux# cat run.sh 
 QEMU_AUDIO_DRV=none qemu-system-arm \
