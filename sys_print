@@ -1,0 +1,57 @@
+#include <unistd.h>
+
+// 规范ARM32 sys_write封装：不手动操作r7，避免编译错误
+int my_write(int fd, const char *buf, size_t count) {
+    int ret;
+    // 系统调用号__NR_write=4（ARM32固定），作为输入参数传入汇编块
+    const int syscall_num = 4;
+
+    __asm__ __volatile__(
+        // 1. 传递参数到r0-r2（ARM32系统调用参数寄存器）
+        "mov r0, %1\n"          // fd -> r0
+        "mov r1, %2\n"          // buf -> r1
+        "mov r2, %3\n"          // count -> r2
+        // 2. 传递系统调用号到r7（由编译器保证使用合法临时寄存器，不破坏帧指针）
+        "mov r7, %4\n"          // syscall_num -> r7（编译器自动处理r7的保存/恢复）
+        // 3. 触发系统调用
+        "svc #0\n"
+        // 4. 保存返回值到ret
+        "mov %0, r0\n"
+        // 输出参数：ret（编译器自动分配寄存器）
+        : "=r" (ret)
+        // 输入参数：fd/buf/count/syscall_num（严格对应r0-r2和系统调用号）
+        : "r" (fd), "r" (buf), "r" (count), "r" (syscall_num)
+        // 破坏列表：仅声明被修改的通用寄存器（不手动声明r7，由编译器处理）
+        : "r0", "r1", "r2", "memory"
+    );
+    return ret;
+}
+
+int main() {
+    const char *msg = "ARM32 syscall\n";
+    // 调用my_write：fd=1（标准输出），buf=msg，count=13（字符串长度）
+    my_write(1, msg, 13);
+    return 0;
+}
+
+arm-linux-gnueabihf-gcc -g a.c -march=armv7-a -mtune=cortex-a9 -o s32c -mfpu=neon -static  -fomit-frame-pointer
+果然加了 -fomit-frame-pointer就OK了
+
+/mnt/nfs_disk # ./s32c 
+ARM32 syscall
+
+调试过程
+# 1. 设置 core 文件大小无限制（默认 0，关闭转储）
+ulimit -c unlimited
+# 2. （可选）设置 core 文件保存路径（默认当前目录）
+echo "/tmp/core.%p" > /proc/sys/kernel/core_pattern  # %p 表示进程 PID
+
+将core.xx传回主机
+gdb-multiarch s32c core.xx
+
+bt
+disas
+info reg
+
+
+
