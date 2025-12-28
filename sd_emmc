@@ -1,0 +1,10 @@
+QEMU_AUDIO_DRV=none qemu-system-arm \
+  -M vexpress-a9 \
+  -kernel linux-5.15.50/arch/arm/boot/zImage \
+  -dtb linux-5.15.50/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+  -drive file=busybox/rootfs.ext4,format=raw,id=rootfs,if=sd \
+  -drive file=/var/fpwork/emmc.img,format=raw,id=emmc_disk \
+  -append "root=/dev/mmcblk0 rw console=ttyAMA0,115200 init=/linuxrc ignore_loglevel" \
+  -m 512M \
+  -nographic \
+  -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2222-:2
