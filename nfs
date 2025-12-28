@@ -1,0 +1,73 @@
+//vexpress  默认配置了这些
+# NFS 客户端核心支持
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y  # 嵌入式常用 NFS v3 版本，兼容性最好
+# 网络基础配置（已开启，无需额外修改）
+CONFIG_NET=y
+CONFIG_INET=y
+
+server endpoint
+// install nfs server
+sudo apt update && sudo apt install nfs-kernel-server rpcbind -y
+# 创建共享目录（作为 QEMU 的网络磁盘根目录）
+sudo mkdir -p /var/fpwork/nfs_share
+# 赋予读写权限（避免 QEMU 挂载后权限不足）
+sudo chmod 777 /var/fpwork/nfs_share
+# （可选）创建测试文件，方便 QEMU 验证
+echo "NFS Network Disk Test" > /var/fpwork/nfs_share/nfs_test.txt
+
+# 编辑 NFS 配置文件
+sudo vi /etc/exports
+# 在文件末尾添加以下内容（核心配置）
+/var/fpwork/nfs_share  192.168.1.0/24(rw,sync,no_root_squash,no_subtree_check,insecure)
+一开始mount 在qemu侧总是显示权限问题改成以下就ok了
+/var/fpwork/nfs_share  *(rw,sync,no_root_squash,no_subtree_check,insecure)
+
+# 重新加载 NFS 配置
+sudo exportfs -rv
+# 启动/重启 NFS 服务
+sudo systemctl restart nfs-kernel-server rpcbind
+# 设置开机自启（可选）
+sudo systemctl enable nfs-kernel-server rpcbind
+# 验证 NFS 共享（查看已导出的目录）
+showmount -e localhost
+////////////////////////////////
+
+qemu
+paramters of starting
+# 替换为用户模式网络参数
+-netdev user,id=net0,hostfwd=tcp:127.0.0.1:2222-:22 \
+-device virtio-net-device,netdev=net0
+
+# 配置 IP（用户模式默认网段 10.0.2.0/24）
+ifconfig eth0 10.0.2.15 netmask 255.255.255.0 up
+# 默认网关固定为 10.0.2.2（QEMU 内置 NAT 网关）
+route add default gw 10.0.2.2 eth0
+# 配置 DNS
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+# 桥接模式：ping 主机网桥 IP（如 192.168.1.100）
+ping 192.168.1.100 -c 4
+# 用户模式：ping 主机虚拟 IP（10.0.2.2），需主机 NFS 配置允许 10.0.2.0/24 网段
+ping 10.0.2.2 -c 4
+
+# 1. 创建挂载点（自定义名称，如 /mnt/nfs_disk）
+mkdir -p /mnt/nfs_disk
+
+# 用户模式（主机 IP 为 10.0.2.2）
+# mount -t nfs 10.0.2.2:/var/fpwork/nfs_share /mnt/nfs_disk -o nolock,rw,vers=3
+
+# 编辑 fstab 文件
+vi /etc/fstab
+
+# 末尾追加以下内容（对应你的网络模式）
+# 桥接模式
+192.168.1.100:/var/fpwork/nfs_share  /mnt/nfs_disk  nfs  nolock,rw,vers=3  0  0
+
+# 用户模式（备选）
+# 10.0.2.2:/var/fpwork/nfs_share  /mnt/nfs_disk  nfs  nolock,rw,vers=3  0  0
+
+# 保存退出，重启后自动挂载
+reboot
+
+
