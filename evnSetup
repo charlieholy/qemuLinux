@@ -56,8 +56,21 @@ EOF
 sudo mknod dev/console c 5 1
 sudo mknod dev/ttyAMA0 c 204 64  # QEMU 串口节点
 
+
+
 dd if=/dev/zero of=a64rootfs.ext4 bs=1M count=128
-mkfs.ext4 a64rootfs.ext4
+# 3. 格式化空镜像为ext4格式（必须格式化，否则无法挂载和使用）
+sudo mkfs.ext4 a64rootfs.ext4
+# 4. 创建临时挂载目录（已创建可跳过）
+mkdir -p tmp_mount
+# 5. 挂载新建的空ext4镜像到tmp_mount
+sudo mount a64rootfs.ext4 tmp_mount/
+# 6. 复制a64rootfs目录下所有文件到镜像中（保留文件权限和结构）
+sudo cp -rf a64rootfs/* tmp_mount/
+# 7. 同步数据（确保所有文件写入镜像，避免丢失）
+sudo sync
+# 8. 卸载镜像（完成打包）
+sudo umount tmp_mount/
 
 root@iZbp18b84buehuy2ylm0joZ:/var/fpwork/pechen/linux# cat run.sh 
 QEMU_AUDIO_DRV=none qemu-system-arm \
