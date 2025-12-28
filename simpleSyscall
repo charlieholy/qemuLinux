@@ -1,0 +1,12 @@
+int main() {
+    __asm__ __volatile__(
+        "mov r7, #1\n"  // __NR_exit = 1（退出程序，最安全的系统调用）
+        "mov r0, #0\n"  // 返回值0
+        "svc #0\n"
+    );
+    return 3;
+}
+
+arm-linux-gnueabihf-gcc b.c -march=armv7-a -mtune=cortex-a9 -o sinpleS -mfpu=neon -static
+
+cp sinpleS /var/fpwork/nfs_share/
