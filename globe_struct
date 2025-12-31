@@ -1,0 +1,3 @@
+(gdb) p *cdev_map->probes[5]
+$9 = {next = 0xffff000002696400, dev = 0x500002, range = 0x1, owner = 0x0, get = 0xffff80000824edc0 <exact_match>, 
+  lock = 0xffff80000824f774 <exact_lock>, data = 0xffff80000a083bb0 <ptmx_cdev>}
