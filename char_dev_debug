@@ -2,3 +2,5 @@
 b start_kernel not work
 then handle it via ==>  -append "console=ttyAMA0 root=/dev/ram rdinit=/init nokaslr"
 then it's works
+
+kobj_lookup
