@@ -1,0 +1,15 @@
+#!/bin/bash
+qemu-system-aarch64 -M virt -cpu cortex-a53 \
+  -kernel linux-5.15.50/arch/arm64/boot/Image \
+  -drive file=busybox/a64rootfs.ext4,format=raw,id=hd0,if=none \
+  -device virtio-blk-device,drive=hd0 \
+  -virtfs local,path=/var/fpwork/qemu_share,mount_tag=host_share,security_model=passthrough,id=host_share \
+  -device virtio-9p-device,fsdev=host_share,mount_tag=host_share \
+  -append "root=/dev/vda rw console=ttyAMA0 loglevel=8 init=/linuxrc nokaslr" \
+  -nographic
+
+
+  ~ # mkdir -p /mnt/host_share
+~ # mount -t 9p -o trans=virtio host_share /mnt/host_share
+~ # ls /mnt/host_share/
+kprobe_dbg.ko
