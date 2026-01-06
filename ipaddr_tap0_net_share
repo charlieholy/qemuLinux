@@ -1,0 +1,45 @@
+#!/bin/bash
+qemu-system-aarch64 -M virt -cpu cortex-a53 \
+  -kernel linux-5.15.50/arch/arm64/boot/Image \
+  -drive file=busybox/a64rootfs.ext4,format=raw,id=hd0,if=none \
+  -device virtio-blk-device,drive=hd0 \
+  -virtfs local,path=/var/fpwork/qemu_share,mount_tag=host_share,security_model=passthrough,id=host_share \
+  -device virtio-9p-device,fsdev=host_share,mount_tag=host_share \
+  -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
+  -device virtio-net-device,netdev=net0,id=eth0 \
+  -append "root=/dev/vda rw console=ttyAMA0 loglevel=8 init=/linuxrc nokaslr" \
+  -nographic
+
+//host 
+# 1. 安装必备工具（若未安装）
+apt update && apt install -y uml-utilities iptables
+
+# 2. 创建 tap0 虚拟网卡（root 权限无限制）
+tunctl -t tap0 -u root  # 创建 tap0，归属 root
+ifconfig tap0 192.168.200.1 netmask 255.255.255.0 up  # 配置 tap0 IP
+
+# 3. 开启 IP 转发（让 guest 能访问外网）
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# 4. 配置 NAT 规则（将 guest 流量转发到主机物理网卡）
+# 替换 eth0 为你的主机物理网卡名（可通过 `ip addr` 查看，如 ens33、ens160 等）
+PHY_NIC="eth0"
+iptables -t nat -A POSTROUTING -o $PHY_NIC -j MASQUERADE
+iptables -A FORWARD -i tap0 -o $PHY_NIC -j ACCEPT
+iptables -A FORWARD -o tap0 -i $PHY_NIC -j ACCEPT
+
+# 5. 保存 iptables 规则（可选，避免重启失效）
+iptables-save > /etc/iptables.rules
+// guest
+# 1. root 权限启动 QEMU（无任何参数/权限错误）
+chmod +x virt.sh && sh virt.sh
+
+# 2. guest 终端内配置静态 IP（和主机 tap0 同网段）
+ifconfig eth0 192.168.200.2 netmask 255.255.255.0 up
+route add default gw 192.168.200.1 dev eth0  # 网关指向主机 tap0 IP
+echo "nameserver 8.8.8.8" > /etc/resolv.conf  # 配置 DNS 解析
+
+# 3. 验证网络（核心目标）
+ping -c 3 192.168.200.1  # 测试与主机 tap0 互通
+ping -c 3 8.8.8.8        # 测试访问外网（百度 DNS）
+ping -c 3 www.baidu.com  # 测试域名解析（可选）
