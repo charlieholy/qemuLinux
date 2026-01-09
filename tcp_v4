@@ -1,0 +1,6 @@
+(gdb) p *((struct tcphdr *)skb->data)
+$5 = {source = 47138, dest = 27543, seq = 3591144783, ack_seq = 2098708688, res1 = 0, doff = 8, fin = 0, syn = 0, rst = 0, psh = 0, 
+  ack = 1, urg = 0, ece = 0, cwr = 0, window = 65025, check = 31761, urg_ptr = 0}
+(gdb) frame
+#0  tcp_v4_rcv (skb=0xffff00000323d200) at net/ipv4/tcp_ipv4.c:1964
+1964    {
