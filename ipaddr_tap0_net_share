@@ -1,3 +1,10 @@
+
+root@iZbp18b84buehuy2ylm0joZ:~# cat  /etc/lsb-release 
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=24.04
+DISTRIB_CODENAME=noble
+DISTRIB_DESCRIPTION="Ubuntu 24.04.3 LTS"
+
 #!/bin/bash
 qemu-system-aarch64 -M virt -cpu cortex-a53 \
   -kernel linux-5.15.50/arch/arm64/boot/Image \
