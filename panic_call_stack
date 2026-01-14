@@ -1,0 +1,16 @@
+panic call stack
+
+ __show_regs (regs=regs@entry=0xffff8000095cbc10) at arch/arm64/kernel/process.c:236
+#1  0xffff80000801849c in show_regs (regs=regs@entry=0xffff8000095cbc10) at arch/arm64/kernel/process.c:245
+#2  0xffff80000804c02c in __warn (file=file@entry=0xffff800000ad124e "include/linux/thread_info.h", line=200, caller=caller@entry=0xffff800000ad0150, taint=9, 
+    regs=regs@entry=0xffff8000095cbc10, args=args@entry=0x0) at kernel/panic.c:593
+#3  0xffff800008523644 in report_bug (bugaddr=18446603336232534352, regs=regs@entry=0xffff8000095cbc10) at lib/bug.c:199
+#4  0xffff80000801f590 in bug_handler (regs=0xffff8000095cbc10, esr=<optimized out>) at arch/arm64/kernel/traps.c:965
+#5  0xffff800008015a80 in call_break_hook (regs=regs@entry=0xffff8000095cbc10, esr=<optimized out>) at arch/arm64/kernel/debug-monitors.c:321
+#6  0xffff800008015b7c in brk_handler (unused=<optimized out>, esr=<optimized out>, regs=0xffff8000095cbc10) at arch/arm64/kernel/debug-monitors.c:328
+#7  0xffff800008034130 in do_debug_exception (addr_if_watchpoint=addr_if_watchpoint@entry=4577106, esr=esr@entry=4060088320, regs=regs@entry=0xffff8000095cbc10)
+    at arch/arm64/mm/fault.c:902
+#8  0xffff800008aae0f8 in el1_dbg (regs=0xffff8000095cbc10, esr=4060088320) at arch/arm64/kernel/entry-common.c:388
+#9  0xffff800008aae790 in el1h_64_sync_handler (regs=<optimized out>) at arch/arm64/kernel/entry-common.c:425
+#10 0xffff8000080112f8 in el1h_64_sync () at arch/arm64/kernel/entry.S:579
+
