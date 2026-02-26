@@ -22,3 +22,13 @@ $6 = (pgd_t (*)[512]) 0xffff8000096e8000
 $7 = (pgd_t (*)[512]) 0xffff8000096e7000
 (gdb) p &__init_begin
 $8 = (char (*)[]) 0xffff8000096f0000 <primary_entry>
+
+/////////////
+(gdb) bt
+#0  free_area_init_core (pgdat=<optimized out>) at mm/page_alloc.c:7525
+#1  free_area_init_node (nid=0) at mm/page_alloc.c:7663
+#2  0xffff800009705824 in free_area_init (max_zone_pfn=0xffff800009d09d88 <node_states+8>) at mm/page_alloc.c:8103
+#3  0xffff8000096f6c84 in zone_sizes_init (min=<optimized out>, max=<optimized out>) at arch/arm64/mm/init.c:184
+#4  bootmem_init () at arch/arm64/mm/init.c:380
+#5  0xffff8000096f3ca8 in setup_arch (cmdline_p=0xfffffbfffdc00084) at arch/arm64/kernel/setup.c:350
+#6  0xffff8000096f0c54 in start_kernel () at init/main.c:959
