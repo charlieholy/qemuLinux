@@ -32,3 +32,43 @@ $8 = (char (*)[]) 0xffff8000096f0000 <primary_entry>
 #4  bootmem_init () at arch/arm64/mm/init.c:380
 #5  0xffff8000096f3ca8 in setup_arch (cmdline_p=0xfffffbfffdc00084) at arch/arm64/kernel/setup.c:350
 #6  0xffff8000096f0c54 in start_kernel () at init/main.c:959
+
+Breakpoint 1, 0xffff8000081e42d4 in add_to_free_list (migratetype=<optimized out>, order=<optimized out>, zone=<optimized out>, page=<optimized out>) at mm/page_alloc.c:968
+968             list_add(&page->lru, &area->free_list[migratetype]);
+(gdb) bt
+#0  0xffff8000081e42d4 in add_to_free_list (migratetype=<optimized out>, order=<optimized out>, zone=<optimized out>,
+    page=<optimized out>) at mm/page_alloc.c:968
+#1  expand (migratetype=<optimized out>, high=10, low=<optimized out>, page=<optimized out>, zone=<optimized out>)
+    at mm/page_alloc.c:2308
+#2  __rmqueue_smallest (migratetype=<optimized out>, order=<optimized out>, zone=<optimized out>)
+    at mm/page_alloc.c:2462
+#3  __rmqueue (alloc_flags=<optimized out>, migratetype=<optimized out>, order=<optimized out>, zone=<optimized out>)
+    at mm/page_alloc.c:2995
+#4  rmqueue_bulk (zone=0xffff000007fb3c00, order=0, count=18446462598866746560, list=0x1, migratetype=30,
+    alloc_flags=0) at mm/page_alloc.c:3027
+#5  0xffff8000081e69d4 in __rmqueue_pcplist (list=<optimized out>, pcp=<optimized out>, alloc_flags=<optimized out>,
+    migratetype=<optimized out>, order=<optimized out>, zone=<optimized out>) at mm/page_alloc.c:3624
+#6  rmqueue_pcplist (gfp_flags=<optimized out>, alloc_flags=<optimized out>, migratetype=<optimized out>,
+    order=<optimized out>, zone=<optimized out>, preferred_zone=<optimized out>) at mm/page_alloc.c:3662
+#7  rmqueue (migratetype=<optimized out>, alloc_flags=<optimized out>, gfp_flags=<optimized out>,
+    order=<optimized out>, zone=<optimized out>, preferred_zone=<optimized out>) at mm/page_alloc.c:3690
+#8  get_page_from_freelist (gfp_mask=589824, order=1, alloc_flags=133911808, ac=0x1) at mm/page_alloc.c:4156
+#9  0xffff8000081e72e4 in __alloc_pages (gfp=589824, order=0, preferred_nid=10, nodemask=0x0) at mm/page_alloc.c:5421
+#10 0xffff80000820f114 in __alloc_pages_node (order=<optimized out>, gfp_mask=<optimized out>, nid=<optimized out>)
+    at ./include/linux/gfp.h:570
+#11 alloc_slab_page (s=<optimized out>, oo=..., node=<optimized out>, flags=<optimized out>) at mm/slub.c:1777
+#12 allocate_slab (node=<optimized out>, flags=<optimized out>, s=<optimized out>) at mm/slub.c:1912
+#13 new_slab (s=0xffff8000097a2dc8 <boot_kmem_cache_node>, flags=589832, node=0) at mm/slub.c:1975
+#14 0xffff800008216544 in early_kmem_cache_node_alloc (node=<optimized out>) at mm/slub.c:3915
+#15 init_kmem_cache_nodes (s=<optimized out>) at mm/slub.c:3970
+#16 kmem_cache_open (flags=<optimized out>, s=<optimized out>) at mm/slub.c:4216
+#17 __kmem_cache_create (s=0xffff8000097a2dc8 <boot_kmem_cache_node>, flags=589832) at mm/slub.c:4892
+#18 0xffff800009703bb0 in create_boot_cache (s=0xffff8000097a2dc8 <boot_kmem_cache_node>,
+    name=0xffff8000094d4a90 "kmem_cache_node", size=64, flags=8192, useroffset=0, usersize=0) at mm/slab_common.c:671
+--Type <RET> for more, q to quit, c to continue without paging--
+#19 0xffff800009708c14 in kmem_cache_init () at mm/slub.c:4824
+#20 0xffff8000096f0fbc in mm_init () at init/main.c:853
+#21 start_kernel () at init/main.c:994
+#22 0xffff8000096f03f0 in __primary_switched () at arch/arm64/kernel/head.S:468
+Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+(gdb)
