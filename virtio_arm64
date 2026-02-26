@@ -1,0 +1,24 @@
+ubuntu22
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
+make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image dtbs
+
+arch/arm64/kernel/vmlinux.lds.S
+
+	reserved_pg_dir = .;
+	. += PAGE_SIZE;
+
+	swapper_pg_dir = .;
+	. += PAGE_SIZE;
+
+	. = ALIGN(SEGMENT_ALIGN);
+	__init_begin = .;
+	__inittext_begin = .;
+
+
+(gdb) p &swapper_pg_dir
+$6 = (pgd_t (*)[512]) 0xffff8000096e8000
+(gdb) p &reserved_pg_dir
+$7 = (pgd_t (*)[512]) 0xffff8000096e7000
+(gdb) p &__init_begin
+$8 = (char (*)[]) 0xffff8000096f0000 <primary_entry>
