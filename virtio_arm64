@@ -103,3 +103,22 @@ $11 = {node_zones = {{_watermark = {0, 0, 0}, watermark_boost = 0, nr_reserved_h
       present_pages = 0, cma_pages = 0, name = 0xffff8000094d2af0 "DMA32", nr_isolate_pageblock = 0, initialized = 0,
       _pad1_ = {x = 0xffff000007fb4300 ""}, free_area = {{free_list = 0xffff000007fb4300,
 (gdb)
+
+
+(gdb) p (node_data[0].node_zones)[0].present_pages
+$15 = 32768
+(gdb) p (node_data[0].node_zones)[1].present_pages
+$16 = 0
+(gdb) p (node_data[0].node_zones)[2].present_pages
+$17 = 0
+(gdb) p (node_data[0].node_zones)[2].name
+$18 = 0xffff8000094d2af8 "Normal"
+(gdb) p (node_data[0].node_zones)[3].name
+$19 = 0xffff8000094d2ab8 "Movable"
+(gdb) p (node_data[0].node_zones)[4].name
+$20 = 0x0
+(gdb) p (node_data[0].node_zones)[1].name
+$21 = 0xffff8000094d2af0 "DMA32"
+(gdb) p (node_data[0].node_zones)[0].name
+$22 = 0xffff8000095a2ca0 "DMA"
+(gdb)
