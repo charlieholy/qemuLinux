@@ -3,6 +3,19 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
 make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image dtbs
 
+#!/bin/bash
+qemu-system-aarch64 -M virt -cpu cortex-a53 \
+  -kernel linux-5.15.146/arch/arm64/boot/Image \
+  -drive file=busybox-1.36.1/a64rootfs.ext4,format=raw,id=hd0,if=none \
+  -device virtio-blk-device,drive=hd0 \
+  -append "root=/dev/vda rw console=ttyAMA0 loglevel=8 init=/linuxrc nokaslr" \
+  -nographic \
+  -S -s
+
+// 这个cmd启动到cmd阶段有问题 但是不影响start_kernel阶段的调试..
+ gdb-multiarch -ex 'target remote :1234' vmlinux
+
+
 arch/arm64/kernel/vmlinux.lds.S
 
 	reserved_pg_dir = .;
